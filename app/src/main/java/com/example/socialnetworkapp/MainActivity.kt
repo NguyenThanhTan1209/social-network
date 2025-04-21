@@ -13,7 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.socialnetworkapp.ui.theme.SocialNetworkAppTheme
+import com.example.socialnetworkapp.view.SignInScreen
+import com.example.socialnetworkapp.view.SignUpScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,10 +27,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SocialNetworkAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    MainApp()
                 }
             }
         }
@@ -33,17 +35,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun MainApp(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SocialNetworkAppTheme {
-        Greeting("Android")
+    NavHost(navController = navController, startDestination = "sign_up") {
+        composable("sign_up"){
+            SignUpScreen(navController = navController)
+        }
+        composable("sign_in"){
+            SignInScreen()
+        }
     }
 }
