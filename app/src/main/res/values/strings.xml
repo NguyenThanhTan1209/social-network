@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SocialNetworkApp</string>
+    <string name="textfield_username">Username</string>
+    <string name="signup_textfield_email">Email</string>
+    <string name="signup_textfield_password">Password</string>
+    <string name="signup_textfield_placeholder_username">username123</string>
+    <string name="signup_textfield_placeholder_email">example@domain.com</string>
+    <string name="signup_textfield_placeholder_password">abc_123</string>
 </resources>
