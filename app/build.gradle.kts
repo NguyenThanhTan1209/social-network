@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+    id("com.google.gms.google-services")
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -67,6 +71,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    val nav_version = "2.8.9"
+    //Navigation
     implementation(libs.androidx.navigation.compose)
+    //Firebase
+    implementation(libs.firebase.bom)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    //Hilt
+    implementation("com.google.dagger:hilt-android:2.48")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    ksp("com.google.dagger:hilt-android-compiler:2.48")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
 }
