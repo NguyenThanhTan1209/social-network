@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.socialnetworkapp.R
-import com.example.socialnetworkapp.viewmodel.AuthViewModel
+import com.example.socialnetworkapp.viewmodel.SignUpViewModel
 import com.example.socialnetworkapp.viewmodel.UIState
 import kotlinx.coroutines.launch
 
@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 fun SignUpScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: SignUpViewModel = hiltViewModel()
 ) {
     val userName by viewModel.userName.collectAsState()
     val email by viewModel.email.collectAsState()
@@ -83,7 +83,7 @@ fun SignUpScreen(
         ) {
             SignUpTextField(
                 onValueChange = { viewModel.updateUsername(it) },
-                label = stringResource(R.string.textfield_username),
+                label = stringResource(R.string.signup_textfield_username),
                 placeholder = stringResource(R.string.signup_textfield_placeholder_username),
                 supportingText = {
                     if (userNameError)
@@ -140,7 +140,7 @@ fun SignUpScreen(
                 }
             }
             OutlinedButton(onClick = {
-                navController.navigate(Routes.SIGN_IN_SCREEN)
+                navController.popBackStack()
             }) {
                 Text(text = "Go to Sign In")
             }

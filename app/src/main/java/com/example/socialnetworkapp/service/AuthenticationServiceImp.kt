@@ -1,9 +1,10 @@
 package com.example.socialnetworkapp.service
 
+import android.util.Log
 import com.example.socialnetworkapp.model.User
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -28,7 +29,7 @@ class AuthenticationServiceImp @Inject constructor(
                 .limit(1)
                 .get()
                 .await()
-            if (!querySnapshot.isEmpty){
+            if (!querySnapshot.isEmpty) {
                 return Result.failure(Exception("Username already exists. Please choose another."))
             }
 
@@ -47,16 +48,33 @@ class AuthenticationServiceImp @Inject constructor(
             firebaseFirestore.collection(userCollectionPath).document(userId).set(user).await()
 
             return Result.success(user)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             return Result.failure(e)
         }
     }
 
-    override suspend fun signInWithEmail(email: String, password: String): Result<User> {
-        TODO("Not yet implemented")
+    override suspend fun signInWithEmail(email: String, password: String): Result<User?> {
+        try {
+            // Create user with Firebase Authentication
+            val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            val userId = authResult.user?.uid ?: return Result.failure(Exception("Username or password is not correct. Try again."))
+
+            var user: User? = null
+            // Save user to Firestore
+            firebaseFirestore.collection(userCollectionPath).document(userId)
+                .get().addOnSuccessListener {
+                    user = it.toObject<User>()
+                }.addOnFailureListener {
+                    throw Exception("lay user that bai")
+                }.await()
+            return Result.success(user!!)
+        } catch (e: Exception) {
+            Log.e("adsfasd", "Lõi nay la $e")
+            return Result.failure(e)
+        }
     }
 
-    override suspend fun getCurrentUser(): FirebaseUser {
+    override suspend fun getCurrentUser(): User {
         TODO("Not yet implemented")
     }
 
