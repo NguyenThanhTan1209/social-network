@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">SocialNetworkApp</string>
-    <string name="textfield_username">Username</string>
+    <string name="signup_textfield_username">Username</string>
     <string name="signup_textfield_email">Email</string>
     <string name="signup_textfield_password">Password</string>
     <string name="signup_textfield_placeholder_username">username123</string>
