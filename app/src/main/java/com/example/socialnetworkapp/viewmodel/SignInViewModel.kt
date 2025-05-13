@@ -10,28 +10,17 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthViewModel @Inject constructor(private val repository: AuthenticationRepository) :
+class SignInViewModel @Inject constructor(private val repository: AuthenticationRepository) :
     ViewModel() {
-
     // User input fields and validation errors
     private val _email = MutableStateFlow("")
     val email: StateFlow<String> = _email
-    private val _username = MutableStateFlow("")
-    val userName: StateFlow<String> = _username
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password
     private val _emailError = MutableStateFlow(false)
     val emailError: StateFlow<Boolean> = _emailError
-    private val _usernameError = MutableStateFlow(false)
-    val userNameError: StateFlow<Boolean> = _usernameError
     private val _passwordError = MutableStateFlow(false)
     val passwordError: StateFlow<Boolean> = _passwordError
-
-    // Update username input and validate
-    fun updateUsername(input: String) {
-        _username.value = input
-        _usernameError.value = isUsernameInvalid(input)
-    }
 
     // Update email input and validate
     fun updateEmail(input: String) {
@@ -71,25 +60,11 @@ class AuthViewModel @Inject constructor(private val repository: AuthenticationRe
         return false
     }
 
-    private fun isUsernameInvalid(username: String): Boolean {
-        if (username.isBlank())
-            return true
-        if (username.length < 3 || username.length > 20)
-            return true
-        if (username.contains(" "))
-            return true
-        return false
-    }
-
     // UI state
     private val _uiState = MutableStateFlow<UIState>(UIState.Init)
     val uiState: StateFlow<UIState> = _uiState
 
-    fun signUpWithEmail() {
-        if (_username.value.isEmpty() || _usernameError.value) {
-            _uiState.value = UIState.Error(message = "Your username is incorrect.")
-            return
-        }
+    fun signInWithEmail() {
         if (_email.value.isEmpty() || _emailError.value) {
             _uiState.value = UIState.Error(message = "Your email is incorrect.")
             return
@@ -101,25 +76,23 @@ class AuthViewModel @Inject constructor(private val repository: AuthenticationRe
         viewModelScope.launch {
             _uiState.value = UIState.Loading
             try {
-                val result = repository.signUpWithEmail(
+                val result = repository.signInWithEmail(
                     email = email.value,
                     password = password.value,
-                    userName = userName.value
                 )
                 result.fold(
                     onSuccess = { user ->
                         _uiState.value =
                             UIState.Success(
-                                user = user,
+                                user = user!!,
                                 message = "Sign up successfully!"
                             )
                     },
                     onFailure = { throwable ->
                         _uiState.value =
-                            UIState.Error(message = throwable.message ?: "Unknown error")
+                            UIState.Error(message = "Username or password is not correct")
                     }
                 )
-
             } catch (e: Exception) {
                 _uiState.value = UIState.Error(message = "Sign up failed!: $e")
             }

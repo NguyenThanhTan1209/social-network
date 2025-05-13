@@ -1,7 +1,7 @@
 package com.example.socialnetworkapp.model
 data class User(
-    val userID: String,
-    val email: String,
+    val userID: String = "",
+    val email: String = "",
     val userName: String = "",
     val avatarUrl: String = "",
     val bio: String = "",
