@@ -120,6 +120,19 @@ fun SignInScreen(
                     Text(text = "Sign In")
                 }
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = {
+                    viewModel.signInWithGoogle()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (uiState is UIState.LoadingWithGoogle) {
+                    CircularProgressIndicator()
+                } else {
+                    Text(text = "Sign In With Google")
+                }
+            }
             OutlinedButton(onClick = {
                 navController.navigate(Routes.SIGN_UP_SCREEN)
             }) {
