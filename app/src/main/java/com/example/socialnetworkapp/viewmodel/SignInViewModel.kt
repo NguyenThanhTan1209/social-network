@@ -98,4 +98,28 @@ class SignInViewModel @Inject constructor(private val repository: Authentication
             }
         }
     }
+
+    fun signInWithGoogle() {
+        viewModelScope.launch {
+            _uiState.value = UIState.LoadingWithGoogle
+            try {
+                val result = repository.signInWithGoogle()
+                result.fold(
+                    onSuccess = { user ->
+                        _uiState.value =
+                            UIState.Success(
+                                user = user,
+                                message = "Sign in successfully!"
+                            )
+                    },
+                    onFailure = { throwable ->
+                        _uiState.value =
+                            UIState.Error(message = "Cannot sign in with google")
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.value = UIState.Error(message = "Sign in failed!: $e")
+            }
+        }
+    }
 }
