@@ -20,6 +20,10 @@ class AuthRepositoryImp @Inject constructor(
         )
     }
 
+    override suspend fun signInWithGoogle(): Result<User> {
+        return authenService.signInWithGoogle()
+    }
+
     override suspend fun signInWithEmail(email: String, password: String): Result<User?> {
         return authenService.signInWithEmail(
             email = email,
