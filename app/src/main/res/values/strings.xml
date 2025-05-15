@@ -6,4 +6,5 @@
     <string name="signup_textfield_placeholder_username">username123</string>
     <string name="signup_textfield_placeholder_email">example@domain.com</string>
     <string name="signup_textfield_placeholder_password">abc_123</string>
+    <string name="default_web_client_id">704935295650-iq7snvjs0j5qdoqjhfm1i5oateiq76nq.apps.googleusercontent.com</string>
 </resources>
