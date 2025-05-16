@@ -31,6 +31,10 @@ class AuthRepositoryImp @Inject constructor(
         )
     }
 
+    override fun isUserLoggedIn(): Boolean {
+        return authenService.isUserLoggedIn()
+    }
+
     override suspend fun getCurrentUser(): User {
         return authenService.getCurrentUser()
     }
