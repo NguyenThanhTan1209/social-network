@@ -3,6 +3,7 @@ package com.example.socialnetworkapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialnetworkapp.repository.AuthenticationRepository
+import com.example.socialnetworkapp.state.UserState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -82,24 +83,24 @@ class SignUpViewModel @Inject constructor(private val repository: Authentication
     }
 
     // UI state
-    private val _uiState = MutableStateFlow<UIState>(UIState.Init)
-    val uiState: StateFlow<UIState> = _uiState
+    private val _userState = MutableStateFlow<UserState>(UserState.Init)
+    val userState: StateFlow<UserState> = _userState
 
     fun signUpWithEmail() {
         if (_username.value.isEmpty() || _usernameError.value) {
-            _uiState.value = UIState.Error(message = "Your username is incorrect.")
+            _userState.value = UserState.Error(message = "Your username is incorrect.")
             return
         }
         if (_email.value.isEmpty() || _emailError.value) {
-            _uiState.value = UIState.Error(message = "Your email is incorrect.")
+            _userState.value = UserState.Error(message = "Your email is incorrect.")
             return
         }
         if (_password.value.isEmpty() || _passwordError.value) {
-            _uiState.value = UIState.Error(message = "Your password is incorrect.")
+            _userState.value = UserState.Error(message = "Your password is incorrect.")
             return
         }
         viewModelScope.launch {
-            _uiState.value = UIState.Loading
+            _userState.value = UserState.Loading
             try {
                 val result = repository.signUpWithEmail(
                     email = email.value,
@@ -108,20 +109,20 @@ class SignUpViewModel @Inject constructor(private val repository: Authentication
                 )
                 result.fold(
                     onSuccess = { user ->
-                        _uiState.value =
-                            UIState.Success(
+                        _userState.value =
+                            UserState.Success(
                                 user = user,
                                 message = "Sign up successfully!"
                             )
                     },
                     onFailure = { throwable ->
-                        _uiState.value =
-                            UIState.Error(message = throwable.message ?: "Unknown error")
+                        _userState.value =
+                            UserState.Error(message = throwable.message ?: "Unknown error")
                     }
                 )
 
             } catch (e: Exception) {
-                _uiState.value = UIState.Error(message = "Sign up failed!: $e")
+                _userState.value = UserState.Error(message = "Sign up failed!: $e")
             }
         }
     }

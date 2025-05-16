@@ -1,13 +1,10 @@
 package com.example.socialnetworkapp.service
 
 import android.content.Context
-import android.credentials.GetCredentialException
-import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
-import androidx.lifecycle.viewModelScope
 import com.example.socialnetworkapp.R
 import com.example.socialnetworkapp.model.User
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -17,8 +14,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -148,6 +143,11 @@ class AuthenticationServiceImp @Inject constructor(
         } catch (e: Exception) {
             return Result.failure(e)
         }
+    }
+
+    override fun isUserLoggedIn(): Boolean {
+        val result = (firebaseAuth.currentUser != null)
+        return result
     }
 
     override suspend fun getCurrentUser(): User {

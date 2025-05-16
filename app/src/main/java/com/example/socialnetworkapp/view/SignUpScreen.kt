@@ -33,7 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.socialnetworkapp.R
 import com.example.socialnetworkapp.viewmodel.SignUpViewModel
-import com.example.socialnetworkapp.viewmodel.UIState
+import com.example.socialnetworkapp.state.UserState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -48,21 +48,21 @@ fun SignUpScreen(
     val userNameError by viewModel.userNameError.collectAsState()
     val emailError by viewModel.emailError.collectAsState()
     val passwordError by viewModel.passwordError.collectAsState()
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.userState.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(uiState) {
-        if (uiState is UIState.Success) {
+        if (uiState is UserState.Success) {
             navController.navigate(Routes.HOME_SCREEN) {
                 popUpTo(Routes.SIGN_UP_SCREEN) { inclusive = true }
             }
         }
-        if (uiState is UIState.Error) {
+        if (uiState is UserState.Error) {
             scope.launch {
                 snackbarHostState.showSnackbar(
-                    message = "${(uiState as UIState.Error).message}",
+                    message = "${(uiState as UserState.Error).message}",
                     actionLabel = "Đóng",
                     duration = SnackbarDuration.Short
                 )
@@ -133,7 +133,7 @@ fun SignUpScreen(
                 onClick = { viewModel.signUpWithEmail() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (uiState is UIState.Loading) {
+                if (uiState is UserState.Loading) {
                     CircularProgressIndicator()
                 } else {
                     Text(text = "Sign Up")
