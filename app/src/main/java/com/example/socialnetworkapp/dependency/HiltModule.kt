@@ -2,7 +2,6 @@ package com.example.socialnetworkapp.dependency
 
 import android.app.Application
 import android.content.Context
-import androidx.credentials.CredentialManager
 import com.example.socialnetworkapp.repository.AuthRepositoryImp
 import com.example.socialnetworkapp.repository.AuthenticationRepository
 import com.example.socialnetworkapp.service.AuthenticationService
@@ -13,7 +12,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 
 @Module

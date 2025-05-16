@@ -3,6 +3,8 @@ package com.example.socialnetworkapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialnetworkapp.repository.AuthenticationRepository
+import com.example.socialnetworkapp.state.AuthState
+import com.example.socialnetworkapp.state.UserState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +23,15 @@ class SignInViewModel @Inject constructor(private val repository: Authentication
     val emailError: StateFlow<Boolean> = _emailError
     private val _passwordError = MutableStateFlow(false)
     val passwordError: StateFlow<Boolean> = _passwordError
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
+    val authState: StateFlow<AuthState> = _authState
+    // UI state
+    private val _userState = MutableStateFlow<UserState>(UserState.Init)
+    val userState: StateFlow<UserState> = _userState
+
+    init {
+        checkAuthState()
+    }
 
     // Update email input and validate
     fun updateEmail(input: String) {
@@ -60,21 +71,17 @@ class SignInViewModel @Inject constructor(private val repository: Authentication
         return false
     }
 
-    // UI state
-    private val _uiState = MutableStateFlow<UIState>(UIState.Init)
-    val uiState: StateFlow<UIState> = _uiState
-
     fun signInWithEmail() {
         if (_email.value.isEmpty() || _emailError.value) {
-            _uiState.value = UIState.Error(message = "Your email is incorrect.")
+            _userState.value = UserState.Error(message = "Your email is incorrect.")
             return
         }
         if (_password.value.isEmpty() || _passwordError.value) {
-            _uiState.value = UIState.Error(message = "Your password is incorrect.")
+            _userState.value = UserState.Error(message = "Your password is incorrect.")
             return
         }
         viewModelScope.launch {
-            _uiState.value = UIState.Loading
+            _userState.value = UserState.Loading
             try {
                 val result = repository.signInWithEmail(
                     email = email.value,
@@ -82,44 +89,53 @@ class SignInViewModel @Inject constructor(private val repository: Authentication
                 )
                 result.fold(
                     onSuccess = { user ->
-                        _uiState.value =
-                            UIState.Success(
+                        _userState.value =
+                            UserState.Success(
                                 user = user!!,
                                 message = "Sign up successfully!"
                             )
                     },
                     onFailure = { throwable ->
-                        _uiState.value =
-                            UIState.Error(message = "Username or password is not correct")
+                        _userState.value =
+                            UserState.Error(message = "Username or password is not correct")
                     }
                 )
             } catch (e: Exception) {
-                _uiState.value = UIState.Error(message = "Sign up failed!: $e")
+                _userState.value = UserState.Error(message = "Sign up failed!: $e")
             }
         }
     }
 
     fun signInWithGoogle() {
         viewModelScope.launch {
-            _uiState.value = UIState.LoadingWithGoogle
             try {
                 val result = repository.signInWithGoogle()
                 result.fold(
                     onSuccess = { user ->
-                        _uiState.value =
-                            UIState.Success(
+                        _userState.value =
+                            UserState.Success(
                                 user = user,
                                 message = "Sign in successfully!"
                             )
                     },
                     onFailure = { throwable ->
-                        _uiState.value =
-                            UIState.Error(message = "Cannot sign in with google")
+                        _userState.value =
+                            UserState.Error(message = "Cannot sign in with google")
                     }
                 )
             } catch (e: Exception) {
-                _uiState.value = UIState.Error(message = "Sign in failed!: $e")
+                _userState.value = UserState.Error(message = "Sign in failed!: $e")
             }
+        }
+    }
+
+    fun checkAuthState() {
+        _authState.value = AuthState.Loading
+
+        if (repository.isUserLoggedIn()) {
+            _authState.value = AuthState.Authenticated
+        } else {
+            _authState.value = AuthState.Unauthenticated
         }
     }
 }
