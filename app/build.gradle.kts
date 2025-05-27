@@ -86,4 +86,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
+    //Coil (Load Image)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }
