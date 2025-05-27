@@ -3,6 +3,7 @@ data class User(
     val userID: String = "",
     val email: String = "",
     val userName: String = "",
+    val fullName: String = "",
     val avatarUrl: String = "",
     val bio: String = "",
     val createAt: String = "",
