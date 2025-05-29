@@ -7,6 +7,6 @@ interface AuthenticationRepository {
     suspend fun signInWithGoogle(): Result<User>
     suspend fun signInWithEmail(email: String, password: String): Result<User?>
     fun isUserLoggedIn(): Boolean
-    suspend fun getCurrentUser(): User
+    suspend fun getCurrentUser(): Result<User>
     suspend fun signOut(): String
 }
