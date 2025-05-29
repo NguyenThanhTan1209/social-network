@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +45,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,16 +60,25 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.example.socialnetworkapp.R
 import com.example.socialnetworkapp.model.Post
 import com.example.socialnetworkapp.model.User
+import com.example.socialnetworkapp.state.UserState
+import com.example.socialnetworkapp.viewmodel.ProfileViewModel
+import com.example.socialnetworkapp.viewmodel.SignInViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    paddingValues: PaddingValues,
+    viewModel: ProfileViewModel = hiltViewModel()
+) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var selectedTabIndex by remember { mutableStateOf(0) }
+    val userState by viewModel.userInfo.collectAsState()
     val tabViewItems = listOf<TabViewItem>(
         TabViewItem(
             image = painterResource(R.drawable.grid_icon),
@@ -76,16 +88,6 @@ fun ProfileScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues) {
             image = painterResource(R.drawable.tags_icon),
             text = "Tags"
         ),
-    )
-    val mockUser = User(
-        userID = "id375",
-        avatarUrl = "https://robohash.org/kbxygfwr.png",
-        fullName = "Tuco Salamanca",
-        userName = "tuco-salamanca",
-        bio = "May the wind under your wings bear you where the sun sails and the moon walks.",
-        followerCount = 15,
-        postCount = 10,
-        followingCount = 88,
     )
     val mockPosts = listOf<Post>(
         Post(
@@ -202,109 +204,145 @@ fun ProfileScreen(modifier: Modifier = Modifier, paddingValues: PaddingValues) {
         ),
     )
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.secondary,
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                ),
-                title = {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(mockUser.userName)
-                        }, colors = TopAppBarDefaults.topAppBarColors(
+    // Check auth state on launch
+    LaunchedEffect(key1 = true) {
+        viewModel.getUserInfo()
+    }
+
+    when (userState) {
+        is UserState.Init -> {
+
+        }
+        is UserState.Loading -> {
+            CircularProgressIndicator()
+        }
+        is UserState.Error -> {
+            Text(text = (userState as UserState.Error).message)  // Show error message
+        }
+        else -> {
+            Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                containerColor = MaterialTheme.colorScheme.secondary,
+                topBar = {
+                    TopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = MaterialTheme.colorScheme.secondary
-                        )
-                    )
+                        ),
+                        title = {
+                            CenterAlignedTopAppBar(
+                                title = {
+                                    Text((userState as UserState.Success).user.userName)
+                                }, colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            )
+                        },
+                        actions = {
+                            IconButton(onClick = {}) {
+                                Icon(Icons.Default.Menu, contentDescription = "")
+                            }
+                        })
                 },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Menu, contentDescription = "")
-                    }
-                })
-        },
-    ) { it ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize().padding(it).padding(bottom = it.calculateBottomPadding())
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AsyncImage(
-                    model = mockUser.avatarUrl,
-                    contentDescription = "",
-                    contentScale = ContentScale.Crop,
+            ) { it ->
+                Column(
                     modifier = Modifier
-                        .size(86.dp)
-                        .clip(CircleShape)
-                )
-                InforComponent(info = "Posts", data = mockUser.postCount)
-                InforComponent(info = "Followers", data = mockUser.followerCount)
-                InforComponent(info = "Following", data = mockUser.followingCount)
-            }
-            Spacer(modifier = Modifier.height(17.dp))
-            BioComponent(fullName = mockUser.fullName, bio = mockUser.bio)
-            Spacer(modifier = Modifier.height(15.dp))
-            OutlinedButton(
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.White,
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                shape = RoundedCornerShape(
-                    corner = CornerSize(6.dp)
-                ),
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth(),
-                border = BorderStroke(width = 1.dp, color = Color.White.copy(alpha = 0.15F)),
-                onClick = {},
-            ) {
-                Text(
-                    "Edit Profile", style = MaterialTheme.typography.headlineMedium
-                )
-            }
-            Spacer(modifier = Modifier.height(17.dp))
-            TabRow(
-                selectedTabIndex = selectedTabIndex,
-                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.01f),
-                contentColor = Color.White,
-            ) {
-                tabViewItems.forEachIndexed { index, item ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        selectedContentColor = Color.White,
-                        unselectedContentColor = Color.White.copy(alpha = 0.6f),
-                        modifier = Modifier.height(44.dp),
-                        onClick = {
-                            selectedTabIndex = index
-                        }
+                        .fillMaxSize()
+                        .padding(it)
+                        .padding(bottom = it.calculateBottomPadding())
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            item.image,
-                            contentDescription = item.text,
-                            modifier = Modifier.size(23.dp)
+                        AsyncImage(
+                            model = (userState as UserState.Success).user.avatarUrl,
+                            contentDescription = "",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(86.dp)
+                                .clip(CircleShape)
+                        )
+                        InforComponent(
+                            info = "Posts",
+                            data = (userState as UserState.Success).user.postCount
+                        )
+                        InforComponent(
+                            info = "Followers",
+                            data = (userState as UserState.Success).user.followerCount
+                        )
+                        InforComponent(
+                            info = "Following",
+                            data = (userState as UserState.Success).user.followingCount
                         )
                     }
-                }
-            }
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-            ) {
-                items(mockPosts.size) { i->
-                    AsyncImage(
-                        model = mockPosts[i].imageUrls[0],
-                        contentDescription = "",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .clip(RectangleShape).aspectRatio(1f)
+                    Spacer(modifier = Modifier.height(17.dp))
+                    BioComponent(
+                        fullName = (userState as UserState.Success).user.fullName,
+                        bio = (userState as UserState.Success).user.bio
                     )
+                    Spacer(modifier = Modifier.height(15.dp))
+                    OutlinedButton(
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White,
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        shape = RoundedCornerShape(
+                            corner = CornerSize(6.dp)
+                        ),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth(),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = Color.White.copy(alpha = 0.15F)
+                        ),
+                        onClick = {},
+                    ) {
+                        Text(
+                            "Edit Profile", style = MaterialTheme.typography.headlineMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(17.dp))
+                    TabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.01f),
+                        contentColor = Color.White,
+                    ) {
+                        tabViewItems.forEachIndexed { index, item ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                selectedContentColor = Color.White,
+                                unselectedContentColor = Color.White.copy(alpha = 0.6f),
+                                modifier = Modifier.height(44.dp),
+                                onClick = {
+                                    selectedTabIndex = index
+                                }
+                            ) {
+                                Icon(
+                                    item.image,
+                                    contentDescription = item.text,
+                                    modifier = Modifier.size(23.dp)
+                                )
+                            }
+                        }
+                    }
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                    ) {
+                        items(mockPosts.size) { i ->
+                            AsyncImage(
+                                model = mockPosts[i].imageUrls[0],
+                                contentDescription = "",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .clip(RectangleShape)
+                                    .aspectRatio(1f)
+                            )
+                        }
+                    }
                 }
             }
         }
