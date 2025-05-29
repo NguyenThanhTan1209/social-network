@@ -35,12 +35,11 @@ class AuthRepositoryImp @Inject constructor(
         return authenService.isUserLoggedIn()
     }
 
-    override suspend fun getCurrentUser(): User {
+    override suspend fun getCurrentUser(): Result<User> {
         return authenService.getCurrentUser()
     }
 
     override suspend fun signOut(): String {
         TODO("Not yet implemented")
     }
-
 }

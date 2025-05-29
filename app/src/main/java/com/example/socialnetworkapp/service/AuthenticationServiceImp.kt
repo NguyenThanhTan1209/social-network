@@ -14,18 +14,22 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class AuthenticationServiceImp @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firebaseFirestore: FirebaseFirestore,
+    private val firebaseStorage: FirebaseStorage,
+    private var signInUser: User,
     private val context: Context,
 ) : AuthenticationService {
 
     private val userCollectionPath = "users"
     private val userNameField = "userName"
     private lateinit var credentialManager: CredentialManager
+    private var signUpDefaultAvatar = ""
 
     override suspend fun signUpWithEmail(
         email: String,
@@ -48,11 +52,20 @@ class AuthenticationServiceImp @Inject constructor(
             val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             val userId = authResult.user?.uid ?: return Result.failure(Exception("User ID is null"))
 
+            // Create a storage reference from our app
+            val storageRef = firebaseStorage.reference
+
+            val pathReference = storageRef.child("user_storage/defaul_value/default_avatar.png")
+
+            val storageResult = storageRef.child("user_storage/defaul_value/default_avatar.png").downloadUrl.await()
+            signUpDefaultAvatar = storageResult.toString()
+
             // Create user document in Firestore
             val user = User(
                 userID = userId,
                 email = email,
-                userName = userName
+                userName = userName,
+                avatarUrl = signUpDefaultAvatar
             )
 
             // Save user to Firestore
@@ -150,8 +163,21 @@ class AuthenticationServiceImp @Inject constructor(
         return result
     }
 
-    override suspend fun getCurrentUser(): User {
-        TODO("Not yet implemented")
+    override suspend fun getCurrentUser(): Result<User> {
+        try {
+            val currentUser = firebaseAuth.currentUser
+            if(currentUser == null)
+                return Result.failure(throw Exception("User is null"))
+            firebaseFirestore.collection(userCollectionPath).document(currentUser.uid)
+                .get().addOnSuccessListener {
+                    signInUser = it.toObject<User>()!!
+                }.addOnFailureListener {
+                    throw Exception("lay user that bai")
+                }.await()
+            return Result.success(signInUser)
+        }catch (e: Exception){
+            return Result.failure(e)
+        }
     }
 
     override suspend fun signOut(): String {
